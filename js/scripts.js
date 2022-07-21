@@ -14,19 +14,21 @@ let isLoggedIn = false; //ya se inició sesión?
 let albumArray = [];
 let albumAddedToCart = [];
 
+let totalPrice = 0;
+
 albumArray.push(
-    new Album("Angra", "Temple Of Shadows", "20", "2004"),
-    new Album("Dark Moor", "Beyond The Sea", "5", "2004"),
-    new Album("Galneryus", "Angel Of Salvation", "20", "2012"),
-    new Album("Hizaki", "Rosario", "10", "2016"),
-    new Album("Iorio", "Peso Argento", "40", "1997"),
-    new Album("Kotipelto", "Coldness", "5", "2004"),
-    new Album("Pagan's Mind", "God's Equation", "25", "2005"),
-    new Album("Paladin", "Ascension", "20", "2019"),
-    new Album("Sinergy", "Suicide By My Side", "15", "2002"),
-    new Album("Stratovarius", "Elements", "30", "2014"),
-    new Album("Stratovarius", "Infinite", "5", "2000"),
-    new Album("Symphonity", "Voice From The Silence", "30", "2008"),
+    new Album("Angra", "Temple Of Shadows", 20, "2004"),
+    new Album("Dark Moor", "Beyond The Sea", 5, "2004"),
+    new Album("Galneryus", "Angel Of Salvation", 20, "2012"),
+    new Album("Hizaki", "Rosario", 10, "2016"),
+    new Album("Iorio", "Peso Argento", 40, "1997"),
+    new Album("Kotipelto", "Coldness", 5, "2004"),
+    new Album("Pagan's Mind", "God's Equation", 25, "2005"),
+    new Album("Paladin", "Ascension", 20, "2019"),
+    new Album("Sinergy", "Suicide By My Side", 15, "2002"),
+    new Album("Stratovarius", "Elements", 30, "2014"),
+    new Album("Stratovarius", "Infinite", 5, "2000"),
+    new Album("Symphonity", "Voice From The Silence", 30, "2008"),
     );
 
 let loadAlbums = () =>{
@@ -76,33 +78,87 @@ let addToCart = (albumId) => {
         return obj.id == albumId;
     } )
     albumAddedToCart.push(resultado);
+    sumPrices();
 
+    $('.badge.bg-dark.text-white.ms-1.rounded-pill').html(albumAddedToCart.length);
     showToast(resultado);
 }
 
 let showToast = (resultado) => {
-
-    var toast = document.getElementById("liveToast");
-    toast.className = "mostrar";
-    setTimeout(function(){ toast.className = toast.className.replace("mostrar", ""); }, 5000);
+    if ($('#liveToast').length > 0) $('#liveToast').remove();
 
     $('body').append(
         `
         <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
             <div id="liveToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
                 <div class="toast-header">
-                    <img src="..." class="rounded me-2" alt="...">
-                    <strong class="me-auto">Bootstrap</strong>
-                    <small>11 mins ago</small>
+                    <img src="${resultado.imgPath}" class="rounded me-2" width="32" alt="...">
+                    <strong class="me-auto">Producto añadido</strong>
                     <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
                 </div>
                 <div class="toast-body">
-                    ${resultado.band}
+                    ${resultado.band} -
+                    ${resultado.name} -
+                    ${resultado.year} <br>
+                    $${resultado.price}
                 </div>
             </div>
         </div>
         `
     )
+    $(document).ready( $('#liveToast').toast("show") );
+}
+
+let showCart = () => {
+    if ($('#cartModal').length > 0){
+        $('#cartModal').remove();
+    }
+    
+    $('body').append(
+        `
+        <div class="modal fade" id="cartModal" data-bs-keyboard="false" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Carrito</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="cartModalContainer">
+                        <p>${totalPrice}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+        `
+    ) 
+    for(album of albumAddedToCart){
+        $('#cartModalContainer').append(
+            `
+            <div class="card mb-3" style="max-width: 540px;">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <img src="${album.imgPath}" class="img-fluid rounded-start" alt="...">
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <h5 class="card-title">${album.band} - ${album.name}</h5>
+                            <p class="card-text">$${album.price}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `
+        )
+    }
+    $('#cartModal').modal('toggle');
+}
+
+let sumPrices = () => {
+    for (album of albumAddedToCart){
+        totalPrice += album.price
+    }
+    return totalPrice
 }
 
 $(document).ready(toggleLogon); //ejecutar login modal tras carga del documento
@@ -124,3 +180,5 @@ $('#button-submit').click( function() { // detectar formulario y revisar la vali
 
     form.addClass('was-validated')
 })
+
+$('#viewCart').click(showCart);
